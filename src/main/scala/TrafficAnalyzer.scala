@@ -3,7 +3,7 @@ import java.io.File
 
 import com.github.tototoshi.csv._
 
-object Main {
+object TrafficAnalyzer {
   val CsvFile = new File("kasyo01.csv")
 
   implicit object MyFormat extends DefaultCSVFormat {
