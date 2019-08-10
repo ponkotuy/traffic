@@ -2,6 +2,9 @@
 import java.io.File
 
 import com.github.tototoshi.csv._
+import geojson.MunicipalBoundaries
+
+import scala.collection.mutable
 
 object TrafficAnalyzer {
   val CsvFile = new File("kasyo01.csv")
@@ -11,6 +14,25 @@ object TrafficAnalyzer {
   }
 
   def main(args: Array[String]): Unit = {
+    val cityTraffic = mutable.Map[String, Int]()
+
+    {
+      val result = analyzeBoundaryTraffic()
+      result.foreach{ boundary =>
+        cityTraffic.updateWith(digit5(boundary.startCity)){ value => Some(value.getOrElse(0) + boundary.traffic) }
+        cityTraffic.updateWith(digit5(boundary.endCity)){ value => Some(value.getOrElse(0) + boundary.traffic) }
+      }
+    }
+
+//    val startCities = 1101 :: 1202 :: 1206 :: Nil
+    val cities = new MunicipalBoundaries
+    cityTraffic.foreach { case (id, traffic) =>
+      cities.addCityProperty(id, "traffic", traffic)
+    }
+    cities.save("traffic.geojson")
+  }
+
+  def analyzeBoundaryTraffic(): List[Boundary] = {
     val reader = CSVReader.open(CsvFile)
     val it = reader.iterator
     it.next() // drop header
@@ -30,9 +52,11 @@ object TrafficAnalyzer {
       }
       if(census.line.name == "美深中川線") println(census)
     }
-    println(boundaries)
     println(endType6s)
+    boundaries
   }
+
+  private def digit5(int: Int) = f"$int%05d"
 }
 
 object BoundaryType {
