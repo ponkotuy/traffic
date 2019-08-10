@@ -24,7 +24,7 @@ object TrafficAnalyzer {
       }
     }
 
-//    val startCities = 1101 :: 1202 :: 1206 :: Nil
+//    val StartCities = 1101 :: 1202 :: 1206 :: Nil
     val cities = new MunicipalBoundaries
     cityTraffic.foreach { case (id, traffic) =>
       cities.addCityProperty(id, "traffic", traffic)
@@ -42,7 +42,9 @@ object TrafficAnalyzer {
       if(census.start.typ == BoundaryType.CityBoundary) {
         endType6s.find(_.end.name == census.start.name).foreach { end =>
           census.traffic.orElse(end.traffic).foreach { traffic =>
-            boundaries :+= Boundary(census.cityCode, end.cityCode, traffic)
+            val low = math.min(census.cityCode, end.cityCode)
+            val high = math.max(census.cityCode, end.cityCode)
+            boundaries :+= Boundary(low, high, traffic)
           }
           endType6s = endType6s.filterNot(_.id == end.id)
         }
@@ -50,7 +52,6 @@ object TrafficAnalyzer {
       if(census.end.typ == BoundaryType.CityBoundary) {
         endType6s :+= census
       }
-      if(census.line.name == "美深中川線") println(census)
     }
     println(endType6s)
     boundaries
