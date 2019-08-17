@@ -3,7 +3,7 @@ import csv.Boundary
 import scala.annotation.tailrec
 
 class MaxTrafficRegion(boundaries: Boundaries) {
-  def regions() = {
+  def regions: Map[Int, Int] = {
     val maxTraffic = new MaxTraffic(boundaries)
     val maxTrafficRecursive = boundaries.cities.map { city =>
       city -> maxTraffic.getRecursive(city)

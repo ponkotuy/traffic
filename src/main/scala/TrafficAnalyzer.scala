@@ -11,7 +11,7 @@ object TrafficAnalyzer {
   }
 
   def main(args: Array[String]): Unit = {
-    val regions = new MaxTrafficRegion(new Boundaries(analyzeBoundaryTraffic())).regions()
+    val regions = new MaxTrafficRegion(new Boundaries(analyzeBoundaryTraffic())).regions
     val cities = new MunicipalBoundaries
     regions.foreach { case (city, cityGroup) =>
       cities.addCityProperty(digit5(city), "city_group", cityGroup)
