@@ -11,6 +11,21 @@ object TrafficAnalyzer {
   }
 
   def main(args: Array[String]): Unit = {
+    val regions = new MaxTrafficRegion(new Boundaries(analyzeBoundaryTraffic())).regions()
+    val cities = new MunicipalBoundaries
+    regions.foreach { case (city, cityGroup) =>
+      cities.addCityProperty(digit5(city), "city_group", cityGroup)
+    }
+    cities.save("region.geojson")
+  }
+
+  def analyzeBoundaryTraffic(): List[Boundary] = {
+    val analyzer = new BoundaryTrafficAnalyzer
+    analyzer.run()
+    analyzer.getResult
+  }
+
+  def calcCityTraffic(): Unit = {
     val cityTraffic = mutable.Map[String, Int]()
 
     {
@@ -26,12 +41,6 @@ object TrafficAnalyzer {
       cities.addCityProperty(id, "traffic", traffic)
     }
     cities.save("traffic.geojson")
-  }
-
-  def analyzeBoundaryTraffic(): List[Boundary] = {
-    val analyzer = new BoundaryTrafficAnalyzer
-    analyzer.run()
-    analyzer.getResult
   }
 
   private def digit5(int: Int) = f"$int%05d"
