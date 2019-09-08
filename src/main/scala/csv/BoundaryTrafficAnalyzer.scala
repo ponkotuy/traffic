@@ -9,7 +9,7 @@ class BoundaryTrafficAnalyzer extends CsvAnalyzer {
   override def execLine(line: Seq[String]): Unit = {
     CensusRecord.fromLine(line).foreach { census =>
       if(census.start.typ == BoundaryType.CityBoundary) {
-        endType6s.find(_.end.name == census.start.name).foreach { end =>
+        endType6s.find { x => x.end.name == census.start.name && x.line.number == census.line.number }.foreach { end =>
           census.traffic.orElse(end.traffic).foreach { traffic =>
             val low = math.min(census.cityCode, end.cityCode)
             val high = math.max(census.cityCode, end.cityCode)

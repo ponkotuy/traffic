@@ -17,7 +17,6 @@ class MaxTrafficRegion(boundaries: Boundaries) {
 
 class MaxTraffic(boundaries: Boundaries) {
   val maxTraffics: Map[Int, Int] = calcMaxTraffic
-  println(maxTraffics)
 
   private def calcMaxTraffic = {
     boundaries.cities.map{ city =>
