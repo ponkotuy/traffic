@@ -5,6 +5,7 @@ class BoundaryTrafficAnalyzer extends CsvAnalyzer {
   private[this] var endType6s: List[CensusRecord] = Nil
 
   override def fileName: String = "kasyo01.csv"
+  override val dropLine: Int = 1
 
   override def execLine(line: Seq[String]): Unit = {
     CensusRecord.fromLine(line).foreach { census =>

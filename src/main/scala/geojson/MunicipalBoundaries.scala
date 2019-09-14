@@ -17,11 +17,11 @@ class MunicipalBoundaries {
   val cities: mutable.Map[String, scala.collection.Seq[FeatureWithUUID]] =
     mutable.Map(geojson.getFeatures.groupBy(_.properties(Id).toString).toSeq:_*)
 
-  def getCity(id: String): scala.collection.Seq[FeatureWithUUID] = cities.getOrElse(id, Nil)
+  def getCity(id: Int): scala.collection.Seq[FeatureWithUUID] = cities.getOrElse(digit5(id), Nil)
 
-  def getCityProperty(id: String): scala.collection.Seq[Property] = getCity(id).map(_.properties)
+  def getCityProperty(id: Int): scala.collection.Seq[Property] = getCity(id).map(_.properties)
 
-  def addCityProperty(id: String, key: String, value: Any): Boolean = cities.updateWith(id) { optCities =>
+  def addCityProperty(id: Int, key: String, value: Any): Boolean = cities.updateWith(digit5(id)) { optCities =>
     optCities.map { cities =>
       val newCities = cities.map { city =>
         val newCity = city.copy(properties = city.properties + (key -> value))
@@ -31,6 +31,8 @@ class MunicipalBoundaries {
       newCities
     }
   }.isDefined
+
+  private def digit5(int: Int) = f"$int%05d"
 
   def save(fname: String): Unit = {
     geojson.save(fname)
