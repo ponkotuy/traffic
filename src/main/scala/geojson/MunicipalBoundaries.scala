@@ -2,20 +2,32 @@ package geojson
 
 import scala.collection.mutable
 
-object MunicipalBoundaries {
-  val FName = "N03-19_01_190101.geojson"
-  val Id = "N03_007"
-  val City = "N03_004"
+case class MunicipalBoundariesSettings(
+    fname: String,
+    idColumn: String,
+    cityColumn: String
+)
+
+object MunicipalBoundariesSettings {
+  val Hokkaido: MunicipalBoundariesSettings = MunicipalBoundariesSettings(
+    "N03-19_01_190101.geojson",
+    "N03_007",
+    "N03_004"
+  )
+
+  val Japan: MunicipalBoundariesSettings = MunicipalBoundariesSettings(
+    "geojson/japan.geojson",
+    "JCODE",
+    "SIKUCHOSON"
+  )
 }
 
-class MunicipalBoundaries {
-  import MunicipalBoundaries._
-
+class MunicipalBoundaries(settings: MunicipalBoundariesSettings) {
   type Property = Map[String, Any]
 
-  val geojson = new GeoJson(FName)
+  val geojson = new GeoJson(settings.fname)
   val cities: mutable.Map[String, scala.collection.Seq[FeatureWithUUID]] =
-    mutable.Map(geojson.getFeatures.groupBy(_.properties(Id).toString).toSeq:_*)
+    mutable.Map(geojson.getFeatures.groupBy(_.properties(settings.idColumn).toString).toSeq:_*)
 
   def getCity(id: Int): scala.collection.Seq[FeatureWithUUID] = cities.getOrElse(digit5(id), Nil)
 

@@ -1,9 +1,11 @@
 package csv
 
+import java.io.File
+
 import scala.util.matching.Regex
 
 class PopulationCensusAnalyzer extends CsvAnalyzer {
-  override def fileName: String = "001_01.csv"
+  override def file: File = new File("001_01.csv")
   override val dropLine: Int = 10
   override val encode: String = "Shift_JIS"
 
