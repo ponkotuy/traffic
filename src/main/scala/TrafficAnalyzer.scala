@@ -7,6 +7,7 @@ import geojson.{MunicipalBoundaries, MunicipalBoundariesSettings}
 
 import scala.collection.mutable
 import scala.compat.java8.StreamConverters._
+import scala.util.chaining._
 
 object TrafficAnalyzer {
   implicit object MyFormat extends DefaultCSVFormat {
@@ -23,14 +24,19 @@ object TrafficAnalyzer {
   }
 
   def analyzeBoundaryTraffic(): Seq[Boundary] = {
-    val dir = Paths.get("census")
-    val files = Files.list(dir).toScala[Vector].filter(Files.isRegularFile(_))
-    files.flatMap { path =>
+    val dir = Paths.get("census/")
+    val files = Files.list(dir).toScala[Vector].filter { f =>
+      Files.isRegularFile(f) && f.toString.endsWith(".csv")
+    }
+    val result = files.foldLeft(BoundaryTrafficAnalyzer.Result.Empty) { case (result, path) =>
       println(path)
-      val analyzer = new BoundaryTrafficAnalyzer(path.toFile)
+      val analyzer = new BoundaryTrafficAnalyzer(path.toFile, result)
       analyzer.run()
       analyzer.getResult
     }
+    println(result.fragments)
+    println(result.boundaries.size)
+    result.boundaries
   }
 
   def calcCityTraffic(): Unit = {

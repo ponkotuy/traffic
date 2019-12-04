@@ -5,8 +5,10 @@ case class CensusRecord(id: Long, line: Line, start: Point, end: Point, cityCode
 object CensusRecord {
   val Id = 0
   val StartConnectType = 6
+  val StartConnectId = 7
   val StartConnectName = 9
   val EndConnectType = 11
+  val EndConnectId = 12
   val EndConnectName = 14
   val CityCode = 18
   val Traffic = 41
@@ -15,8 +17,10 @@ object CensusRecord {
     id <- xs.lift(Id)
     line <- Line.fromLine(xs)
     startType <- xs.lift(StartConnectType)
+    startId = xs.lift(StartConnectId)
     startName <- xs.lift(StartConnectName)
     endType <- xs.lift(EndConnectType)
+    endId = xs.lift(EndConnectId)
     endName <- xs.lift(EndConnectName)
     cityCode <- xs.lift(CityCode)
     traffic <- xs.lift(Traffic)
@@ -24,12 +28,12 @@ object CensusRecord {
     CensusRecord(
       id.toLong,
       line,
-      Point(startType.toInt, startName),
-      Point(endType.toInt, endName),
+      Point(startType.toInt, startId.flatMap(_.toLongOption), startName),
+      Point(endType.toInt, endId.flatMap(_.toLongOption), endName),
       cityCode.toInt,
       traffic.toIntOption
     )
   }
 }
 
-case class Point(typ: Int, name: String)
+case class Point(typ: Int, id: Option[Long], name: String)

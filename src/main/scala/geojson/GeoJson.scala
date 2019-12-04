@@ -3,6 +3,7 @@ package geojson
 import java.io.{BufferedOutputStream, File, FileOutputStream}
 import java.util.UUID
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
@@ -30,6 +31,7 @@ class GeoJson(fname: String) {
   }
 }
 
+@JsonIgnoreProperties(Array("name"))
 case class FeatureCollection(`type`: String, crs: Crs, features: Seq[Feature])
 case class Crs(`type`: String, properties: Map[String, Any])
 case class Feature(`type`: String, properties: Map[String, Any], geometry: Geometry)
@@ -42,4 +44,4 @@ object FeatureWithUUID {
   def apply(uuid: UUID, f: Feature): FeatureWithUUID = FeatureWithUUID(uuid, f.`type`, f.properties, f.geometry)
 }
 
-case class Geometry(`type`: String, coordinates: Seq[Seq[Seq[BigDecimal]]])
+case class Geometry(`type`: String, coordinates: Seq[Seq[Seq[Seq[BigDecimal]]]])

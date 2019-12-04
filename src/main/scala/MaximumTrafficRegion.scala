@@ -1,6 +1,7 @@
 import csv.Boundary
 
 import scala.annotation.tailrec
+import scala.util.Try
 
 class MaxTrafficRegion(boundaries: Boundaries) {
   def regions: Map[Int, Int] = {
@@ -41,6 +42,7 @@ class Boundaries(boundaries: Seq[Boundary]) {
 }
 
 object Boundaries {
-  def other(boundary: Boundary, city: Int): Int =
+  def other(boundary: Boundary, city: Int): Int = Try {
     (Set(boundary.startCity, boundary.endCity) - city).head
+  }.getOrElse { println(boundary, city); throw new RuntimeException("") }
 }

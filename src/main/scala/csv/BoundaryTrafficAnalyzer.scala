@@ -2,35 +2,70 @@ package csv
 
 import java.io.File
 
-class BoundaryTrafficAnalyzer(override val file: File) extends CsvAnalyzer {
-  private[this] var boundaries: List[Boundary] = Nil
-  private[this] var endType6s: List[CensusRecord] = Nil
+import scala.collection.mutable
+import BoundaryTrafficAnalyzer.Result
+
+class BoundaryTrafficAnalyzer(override val file: File, init: Result) extends CsvAnalyzer {
+  import BoundaryType._
+  import BoundaryTrafficAnalyzer._
+
+  private[this] var boundaries: List[Boundary] = init.boundaries
+  private[this] val prefFragments: mutable.Map[Long, CensusRecord] = mutable.Map.from(init.fragments)
+  private[this] var cityEndFragments: List[CensusRecord] = Nil
 
   override val dropLine: Int = 1
 
   override def execLine(line: Seq[String]): Unit = {
     CensusRecord.fromLine(line).foreach { census =>
-      if(census.start.typ == BoundaryType.CityBoundary) {
-        endType6s.find { x => x.end.name == census.start.name && x.line.number == census.line.number }.foreach { end =>
-          census.traffic.orElse(end.traffic).foreach { traffic =>
-            val low = math.min(census.cityCode, end.cityCode)
-            val high = math.max(census.cityCode, end.cityCode)
-            boundaries :+= Boundary(low, high, traffic)
+      if(prefFragments.get(census.id).isDefined) {
+        prefFragments.remove(census.id).foreach { other =>
+          boundaries ++= genBoundary(census, other)
+        }
+      } else {
+        val points = census.start :: census.end :: Nil
+        points.filter(_.typ == PrefBoundary).foreach { point =>
+          point.id.foreach { id =>
+            prefFragments.put(id, census)
           }
-          endType6s = endType6s.filterNot(_.id == end.id)
         }
       }
-      if(census.end.typ == BoundaryType.CityBoundary) {
-        endType6s :+= census
+      if(census.start.typ == CityBoundary) {
+        cityEndFragments.find { x => x.end.name == census.start.name && x.line.number == census.line.number }.foreach { end =>
+          boundaries ++= genBoundary(census, end)
+          cityEndFragments = cityEndFragments.filterNot(_.id == end.id)
+        }
+      }
+      if(census.end.typ == CityBoundary) {
+        cityEndFragments :+= census
       }
     }
   }
 
-  def getResult: List[Boundary] = boundaries
+  def getResult: Result = Result(boundaries, prefFragments.toMap)
+}
+
+object BoundaryTrafficAnalyzer {
+  def getTraffic(x: CensusRecord, y: CensusRecord): Option[Int] =
+    x.traffic.orElse(y.traffic)
+
+  def genBoundary(x: CensusRecord, y: CensusRecord): Option[Boundary] = {
+    val low = math.min(x.cityCode, y.cityCode)
+    val high = math.max(x.cityCode, y.cityCode)
+    if(low == high) println(x, y)
+    getTraffic(x, y).map(Boundary(low, high, _))
+  }
+
+  case class Result(boundaries: List[Boundary], fragments: Map[Long, CensusRecord])
+
+  object Result {
+    val Empty: Result = Result(Nil, Map.empty)
+  }
 }
 
 object BoundaryType {
+  val PrefBoundary = 3
   val CityBoundary = 6
+  val Boundaries: Seq[Int] = PrefBoundary :: CityBoundary :: Nil
 }
 
 case class Boundary(startCity: Int, endCity: Int, traffic: Int)

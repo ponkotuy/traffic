@@ -26,8 +26,11 @@ class MunicipalBoundaries(settings: MunicipalBoundariesSettings) {
   type Property = Map[String, Any]
 
   val geojson = new GeoJson(settings.fname)
-  val cities: mutable.Map[String, scala.collection.Seq[FeatureWithUUID]] =
-    mutable.Map(geojson.getFeatures.groupBy(_.properties(settings.idColumn).toString).toSeq:_*)
+  val cities: mutable.Map[String, scala.collection.Seq[FeatureWithUUID]] = {
+    mutable.Map(geojson.getFeatures.groupBy { feature =>
+      Option(feature.properties(settings.idColumn)).map(_.toString).getOrElse("")
+    }.toSeq:_*)
+  }
 
   def getCity(id: Int): scala.collection.Seq[FeatureWithUUID] = cities.getOrElse(digit5(id), Nil)
 
